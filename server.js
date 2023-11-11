@@ -1,28 +1,35 @@
 require("dotenv").config();
 const express = require("express");
+const morgan = require("morgan");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const userRoutes = require("./routes/users/users");
 const postRoutes = require("./routes/posts/posts");
 const commentRoutes = require("./routes/comments/comment");
+const globalErrHandler = require("./middlewares/globalErrorHandler");
 
 require("./config/dbConnect");
 
 // app initialize
 const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(morgan("dev"));
 
 //middlewares
 //------
 //users route
-app.use("/api/v1/users", userRoutes);
+app.use("/api/users", userRoutes);
 
-//posts route
-app.use("/api/v1/posts", postRoutes);
+// //posts route
+// app.use("/api/posts", postRoutes);
 
-//comments
-app.use("/api/v1/comments", commentRoutes);
+// //comments
+// app.use("/api/comments", commentRoutes);
 
 //Error handler middlewares
+
+app.use(globalErrHandler);
 
 const PORT = process.env.SERVER_PORT || 9000;
 app.listen(PORT, () => {

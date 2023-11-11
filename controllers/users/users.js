@@ -1,24 +1,67 @@
+const bcrypt = require("bcryptjs");
+const User = require("../../models/user/User");
+const appErr = require("../../utils/appErr");
+
 //register
-const registerCtrl = async (req, res) => {
+
+const registerCtrl = async (req, res, next) => {
   try {
+    const { fullname, email, password } = req.body;
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return next(appErr("User already exists"));
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create a new user
+    const user = await User.create({
+      fullname,
+      email,
+      password: hashedPassword,
+    });
+
+    // Return success response
     res.json({
       status: "success",
-      user: "User registered",
+      user,
     });
   } catch (error) {
-    res.json(error);
+    // Handle errors
+    res.status(500).json({ error: error.message });
   }
 };
 
 //login
 const loginCtrl = async (req, res) => {
   try {
+    const { email, password } = req.body;
+
+    const userFound = await User.findOne({ email });
+
+    if (!userFound) {
+      return res.json({ status: "false", data: "Invalid Email" });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, userFound.password);
+
+    if (!isPasswordValid) {
+      return res.json({
+        status: "failed",
+        data: "Invalid Login credentials",
+      });
+    }
+
     res.json({
       status: "success",
-      user: "User login",
+      data: userFound,
     });
   } catch (error) {
-    res.json(error);
+    // Handle errors
+    res.status(500).json({ status: "error", data: error.message });
   }
 };
 
