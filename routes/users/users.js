@@ -20,11 +20,8 @@ userRoutes.post("/register", registerCtrl);
 // //POST/api/v1/users/login
 userRoutes.post("/login", loginCtrl);
 
-// //GET/api/v1/users/:id
-// userRoutes.get("/:id", userDetailsCtrl);
-
 // //GET/api/v1/users/profile/:id
-userRoutes.get("/profile/:id", protected, profileCtrl);
+userRoutes.get("/profile", protected, profileCtrl);
 
 // //PUT/api/v1/users/profile-photo-upload/:id
 // userRoutes.put("/profile-photo-upload/:id", uploadProfilePhotoCtrl);
@@ -36,7 +33,10 @@ userRoutes.get("/profile/:id", protected, profileCtrl);
 // userRoutes.put("/update-password/:id", updatePasswordCtrl);
 
 // //PUT/api/v1/users/update/:id
-// userRoutes.put("/update/:id", updateUserCtrl);
+userRoutes.put("/update/:id", updateUserCtrl);
+
+// //GET/api/v1/users/:id
+userRoutes.get("/:id", userDetailsCtrl);
 
 // //GET/api/v1/users/logout
 // userRoutes.get("/logout", logoutCtrl);

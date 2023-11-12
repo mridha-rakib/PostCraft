@@ -59,7 +59,7 @@ const loginCtrl = async (req, res, next) => {
       });
     }
     req.session.userAuth = userFound._id;
-    console.log(req.session);
+
     res.json({
       status: "success",
       data: userFound,
@@ -70,23 +70,36 @@ const loginCtrl = async (req, res, next) => {
   }
 };
 
-//details
-const userDetailsCtrl = async (req, res) => {
+//profile
+const profileCtrl = async (req, res) => {
   try {
+    const userId = req.session.userAuth;
+
+    const user = await User.findById(userId);
+
     res.json({
       status: "success",
-      user: "User Details",
+      user: user,
     });
   } catch (error) {
     res.json(error);
   }
 };
-//profile
-const profileCtrl = async (req, res) => {
+
+//details
+const userDetailsCtrl = async (req, res, next) => {
   try {
+    const userId = req.params.id;
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return next(appErr("User not found"));
+    }
+
     res.json({
       status: "success",
-      user: "User profile",
+      user: "User Details",
     });
   } catch (error) {
     res.json(error);
@@ -131,14 +144,34 @@ const updatePasswordCtrl = async (req, res) => {
 };
 
 //update user
-const updateUserCtrl = async (req, res) => {
+const updateUserCtrl = async (req, res, next) => {
   try {
+    const { fullname, email } = req.body;
+
+    console.log(email);
+    if (email) {
+      const emailTaken = await User.findOne({ email });
+      if (emailTaken) {
+        return next(appErr("Email is taken", 400));
+      }
+    }
+
+    // update the user
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      {
+        fullname,
+        email,
+      },
+      { new: true }
+    );
+
     res.json({
       status: "success",
-      user: "User  update",
+      data: user,
     });
   } catch (error) {
-    res.json(error);
+    res.json(next(appErr(error.message)));
   }
 };
 
