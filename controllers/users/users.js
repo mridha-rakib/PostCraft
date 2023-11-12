@@ -109,12 +109,26 @@ const userDetailsCtrl = async (req, res, next) => {
 //upload profile photo
 const uploadProfilePhotoCtrl = async (req, res) => {
   try {
+    const userId = req.session.userAuth;
+    const userFound = await User.findById(userId);
+    if (!userFound) {
+      return next(appErr("User not found", 403));
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        profileImage: req.file.path,
+      },
+      { new: true }
+    );
     res.json({
       status: "success",
-      user: "User profile image upload",
+      user: "You have successfully updated your profile photo.",
+      data: user,
     });
   } catch (error) {
-    res.json(error);
+    next(appErr(error.message));
   }
 };
 
@@ -133,12 +147,32 @@ const uploadCoverImgCtrl = async (req, res) => {
 
 //update password
 const updatePasswordCtrl = async (req, res) => {
+  const { userPassword } = req.body;
   try {
+    const hashedPassword = await bcrypt.hash(userPassword, 10);
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      {
+        password: hashedPassword,
+      },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        status: "error",
+        message: "User not found.",
+      });
+    }
+
     res.json({
       status: "success",
-      user: "User password update",
+      message: "Password has been changed successfully",
+      user: updatedUser,
     });
   } catch (error) {
+    console.log(error);
     res.json(error);
   }
 };
@@ -148,7 +182,6 @@ const updateUserCtrl = async (req, res, next) => {
   try {
     const { fullname, email } = req.body;
 
-    console.log(email);
     if (email) {
       const emailTaken = await User.findOne({ email });
       if (emailTaken) {

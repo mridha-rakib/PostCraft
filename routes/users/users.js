@@ -1,4 +1,6 @@
 const express = require("express");
+const multer = require("multer");
+const storage = require("../../config/cloudinary");
 const userRoutes = express.Router();
 const {
   registerCtrl,
@@ -14,6 +16,9 @@ const {
 
 const protected = require("../../middlewares/protected");
 
+// instance of multer
+const upload = multer({ storage });
+
 //POST/api/v1/users/register
 userRoutes.post("/register", registerCtrl);
 
@@ -24,13 +29,18 @@ userRoutes.post("/login", loginCtrl);
 userRoutes.get("/profile", protected, profileCtrl);
 
 // //PUT/api/v1/users/profile-photo-upload/:id
-// userRoutes.put("/profile-photo-upload/:id", uploadProfilePhotoCtrl);
+userRoutes.put(
+  "/profile-photo-upload",
+  protected,
+  upload.single("profile"),
+  uploadProfilePhotoCtrl
+);
 
 // //PUT/api/v1/users/cover-photo-upload/:id
 // userRoutes.put("/cover-photo-upload/:id", uploadCoverImgCtrl);
 
 // //PUT/api/v1/users/update-password/:id
-// userRoutes.put("/update-password/:id", updatePasswordCtrl);
+userRoutes.put("/update-password/:id", updatePasswordCtrl);
 
 // //PUT/api/v1/users/update/:id
 userRoutes.put("/update/:id", updateUserCtrl);
