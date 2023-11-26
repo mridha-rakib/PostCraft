@@ -71,18 +71,22 @@ const loginCtrl = async (req, res, next) => {
 };
 
 //profile
-const profileCtrl = async (req, res) => {
+const profileCtrl = async (req, res, next) => {
   try {
     const userId = req.session.userAuth;
-
-    const user = await User.findById(userId);
+    const user = await User.findById(userId)
+      .populate("posts")
+      .populate("comments");
+    if (!user) {
+      next(appErr("User not found"), 403);
+    }
 
     res.json({
       status: "success",
-      user: user,
+      data: user,
     });
   } catch (error) {
-    res.json(error);
+    next(appErr(error.message));
   }
 };
 
@@ -99,7 +103,7 @@ const userDetailsCtrl = async (req, res, next) => {
 
     res.json({
       status: "success",
-      user: "User Details",
+      data: user,
     });
   } catch (error) {
     res.json(error);
@@ -107,7 +111,7 @@ const userDetailsCtrl = async (req, res, next) => {
 };
 
 //upload profile photo
-const uploadProfilePhotoCtrl = async (req, res) => {
+const uploadProfilePhotoCtrl = async (req, res, next) => {
   try {
     const userId = req.session.userAuth;
     const userFound = await User.findById(userId);
@@ -134,14 +138,29 @@ const uploadProfilePhotoCtrl = async (req, res) => {
 
 //upload cover image
 
-const uploadCoverImgCtrl = async (req, res) => {
+const uploadCoverImgCtrl = async (req, res, next) => {
   try {
+    const userId = req.session.userAuth;
+    const userFound = await User.findById(userId);
+    if (!userFound) {
+      return next(appErr("User not found", 403));
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        coverImage: req.file.path,
+      },
+      { new: true }
+    );
+
     res.json({
       status: "success",
-      user: "User cover image upload",
+      user: "You have successfully updated your cover photo.",
+      data: user,
     });
   } catch (error) {
-    res.json(error);
+    next(appErr(error.message));
   }
 };
 

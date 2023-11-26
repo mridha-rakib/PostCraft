@@ -35,10 +35,10 @@ app.use(
 app.use("/api/users", userRoutes);
 
 // //posts route
-// app.use("/api/posts", postRoutes);
+app.use("/api/posts", postRoutes);
 
 // //comments
-// app.use("/api/comments", commentRoutes);
+app.use("/api/comments", commentRoutes);
 
 //Error handler middlewares
 

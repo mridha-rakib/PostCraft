@@ -5,11 +5,12 @@ const {
   deleteCommentCtrl,
   updateCommentCtrl,
 } = require("../../controllers/comments/comments");
+const protected = require("../../middlewares/protected");
 
 const commentRoutes = express.Router();
 
 // //POST/api/v1/comments
-// commentRoutes.post("/", createCommentCtrl);
+commentRoutes.post("/:id", protected, createCommentCtrl);
 
 // //GET/api/v1/comments/:id
 // commentRoutes.get("/:id", commentDetailsCtrl);
