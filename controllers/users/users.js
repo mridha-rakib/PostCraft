@@ -8,12 +8,18 @@ const registerCtrl = async (req, res, next) => {
   try {
     const { fullname, email, password } = req.body;
     if (!fullname || !email || !password) {
-      return next(appErr("All fields are required"));
+      // return next(appErr("All fields are required"));
+      return res.render("users/register", {
+        error: "All fields are required",
+      });
     }
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return next(appErr("User already exists"));
+      // return next(appErr("User already exists"));
+      return res.render("users/register", {
+        error: "Exist is taken",
+      });
     }
 
     // Hash the password
@@ -27,13 +33,14 @@ const registerCtrl = async (req, res, next) => {
     });
 
     // Return success response
-    res.json({
-      status: "success",
-      user,
-    });
+    // res.json({
+    //   status: "success",
+    //   user,
+    // });
+    res.redirect("/api/v1/users/profile-page");
   } catch (error) {
     // Handle errors
-    res.status(500).json({ error: error });
+    res.json(error);
   }
 };
 
@@ -42,31 +49,42 @@ const loginCtrl = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
-      return next(appErr("Email and password fields are required"));
+      // return next(appErr("Email and password fields are required"));
+      return res.render("users/login", {
+        error: "Email and password fields are required",
+      });
     }
     const userFound = await User.findOne({ email });
 
     if (!userFound) {
-      return next(appErr("Invalid Login credentials"));
+      // return next(appErr("Invalid Login credentials"));
+      return res.render("users/login", {
+        error: "Invalid login credentials",
+      });
     }
 
     const isPasswordValid = await bcrypt.compare(password, userFound.password);
 
     if (!isPasswordValid) {
-      return res.json({
-        status: "failed",
-        data: "Invalid Login credentials",
+      // return res.json({
+      //   status: "failed",
+      //   data: "Invalid Login credentials",
+      // });
+      return res.render("users/login", {
+        error: "Invalid login credentials",
       });
     }
     req.session.userAuth = userFound._id;
 
-    res.json({
-      status: "success",
-      data: userFound,
-    });
+    // res.json({
+    //   status: "success",
+    //   data: userFound,
+    // });
+    res.redirect("/api/v1/users/profile-page");
   } catch (error) {
     // Handle errors
-    res.status(500).json({ status: "error", data: error.message });
+    // res.status(500).json({ status: "error", data: error.message });
+    res.json(error);
   }
 };
 
@@ -94,19 +112,25 @@ const profileCtrl = async (req, res, next) => {
 const userDetailsCtrl = async (req, res, next) => {
   try {
     const userId = req.params.id;
-
+    //find the user
     const user = await User.findById(userId);
 
     if (!user) {
       return next(appErr("User not found"));
     }
 
-    res.json({
-      status: "success",
-      data: user,
+    // res.json({
+    //   status: "success",
+    //   data: user,
+    // });
+    res.render("users/updateUser", {
+      user,
+      error: "",
     });
   } catch (error) {
-    res.json(error);
+    res.render("users/updateUser", {
+      error: error.message,
+    });
   }
 };
 
